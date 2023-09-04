@@ -1,68 +1,129 @@
 /* global themePrefix */
 
-import Component from "@glimmer/component";
+import { withPluginApi } from "discourse/lib/plugin-api";
+import I18n from "I18n";
+import { h } from "virtual-dom";
+import { iconNode } from "discourse-common/lib/icon-library";
+import cookie from "discourse/lib/cookie";
+import { observes } from "discourse-common/utils/decorators";
 import Session from "discourse/models/session";
-import { action, computed } from "@ember/object";
-import { inject as service } from "@ember/service";
-import { tracked } from "@glimmer/tracking";
-import {
-  COLOR_SCHEME_OVERRIDE_KEY,
-  colorSchemeOverride,
-} from "../lib/color-scheme-override";
 
-export default class ColorSchemeToggler extends Component {
-  @service keyValueStore;
-  @tracked storedOverride;
+function activeScheme() {
+  let savedSchemeChoice = cookie("userSelectedScheme");
 
-  constructor() {
-    super(...arguments);
-    this.storedOverride = this.keyValueStore.getItem(COLOR_SCHEME_OVERRIDE_KEY);
-  }
-
-  @computed("storedOverride")
-  get toggleButtonIcon() {
-    switch (this.OSMode) {
-      case "dark":
-        return this.storedOverride === "light" ? "moon" : "sun";
-      case "light":
-        return this.storedOverride === "dark" ? "sun" : "moon";
-    }
-  }
-
-  get OSMode() {
-    return window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
-  }
-
-  @action
-  toggleScheme() {
-    switch (this.OSMode) {
-      case "light":
-        if (this.keyValueStore.getItem(COLOR_SCHEME_OVERRIDE_KEY) === "dark") {
-          this.keyValueStore.removeItem(COLOR_SCHEME_OVERRIDE_KEY);
-        } else {
-          this.keyValueStore.setItem(COLOR_SCHEME_OVERRIDE_KEY, "dark");
-        }
-        break;
-      case "dark":
-        if (this.keyValueStore.getItem(COLOR_SCHEME_OVERRIDE_KEY) !== "light") {
-          this.keyValueStore.setItem(COLOR_SCHEME_OVERRIDE_KEY, "light");
-        } else {
-          this.keyValueStore.removeItem(COLOR_SCHEME_OVERRIDE_KEY);
-        }
-        break;
-    }
-
-    this.storedOverride =
-      this.keyValueStore.getItem(COLOR_SCHEME_OVERRIDE_KEY) || null;
-
-    // currently only used to flip category logos back/forth
-    Session.currentProp("colorSchemeOverride", this.storedOverride);
-
-    colorSchemeOverride(this.storedOverride);
+  if (savedSchemeChoice === "dark") {
+    return "dark";
+  } else if (savedSchemeChoice === "light") {
+    return "light";
+  } else if (window?.matchMedia("(prefers-color-scheme: dark)").matches) {
+    return "dark";
+  } else {
+    return "light";
   }
 }
+
+function updateThemeColor(frames = 0) {
+  // The number is arbitrary (~1s) and in most cases the actual count ends up
+  // being either 0 or 3 (Safari)
+  if (frames >= 60) {
+    // The style is unlikely to load at this point so bail
+    return;
+  }
+
+  let color = getComputedStyle(document.documentElement).getPropertyValue(
+    "--header_background"
+  );
+
+  if (color) {
+    document
+      .querySelector("meta[name=theme-color]")
+      .setAttribute("content", color);
+  } else {
+    requestAnimationFrame(() => updateThemeColor(frames + 1));
+  }
+}
+
+export default {
+  name: "dark-light-toggle-hamburger-initializer",
+
+  initialize() {
+    // get the two <link> elements that hold the dark/light variables
+    let lightTheme = document.querySelector(".light-scheme");
+    let darkTheme = document.querySelector(".dark-scheme");
+
+    if (!lightTheme || !darkTheme) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `Toggle Dark/Light mode hamburger widget not loaded:
+Have you selected two different themes for your dark/light schemes in user preferences? "u/preferences/interface"
+        `
+      );
+      return false;
+    }
+
+    let switchToDark = function () {
+      cookie("userSelectedScheme", "dark", {
+        path: "/",
+        expires: 9999,
+      });
+      darkTheme.media = "all";
+      lightTheme.media = "none";
+
+      Session.currentProp("defaultColorSchemeIsDark", true);
+    };
+
+    let switchToLight = function () {
+      cookie("userSelectedScheme", "light", {
+        path: "/",
+        expires: 9999,
+      });
+      lightTheme.media = "all";
+      darkTheme.media = "none";
+
+      Session.currentProp("defaultColorSchemeIsDark", false);
+    };
+
+    let switchToAuto = function () {
+      cookie("userSelectedScheme", "auto", {
+        path: "/",
+        expires: 9999,
+      });
+      lightTheme.media = "all";
+      darkTheme.media = "(prefers-color-scheme: dark)";
+
+      if (window?.matchMedia("(prefers-color-scheme: dark)").matches) {
+        Session.currentProp("defaultColorSchemeIsDark", true);
+      } else {
+        Session.currentProp("defaultColorSchemeIsDark", false);
+      }
+    };
+
+    let toggleDarkLight = function () {
+      if (activeScheme() === "light") {
+        switchToDark();
+      } else {
+        switchToLight();
+      }
+
+      updateThemeColor();
+    };
+
+    let loadDarkOrLight = function () {
+      updateThemeColor();
+      let savedSchemeChoice = cookie("userSelectedScheme");
+
+      if (!savedSchemeChoice) {
+        return false;
+      }
+
+      if (savedSchemeChoice === "light") {
+        switchToLight();
+      } else if (savedSchemeChoice === "dark") {
+        switchToDark();
+      } else if (savedSchemeChoice === "auto") {
+        switchToAuto();
+      }
+    };
 
     function createToggle(iconName, labelName) {
       let title = I18n.t(themePrefix("toggle_description"));
