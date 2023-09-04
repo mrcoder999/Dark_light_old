@@ -123,11 +123,7 @@ Have you selected two different themes for your dark/light schemes in user prefe
         logoDarkSrc.media = logoDarkSrc.origMedia;
       }
 
-      if (window?.matchMedia("(prefers-color-scheme: dark)").matches) {
-        Session.currentProp("defaultColorSchemeIsDark", true);
-      } else {
-        Session.currentProp("defaultColorSchemeIsDark", false);
-      }
+      
     };
 
     let toggleDarkLight = function () {
