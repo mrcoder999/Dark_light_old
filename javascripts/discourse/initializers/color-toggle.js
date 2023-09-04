@@ -110,8 +110,18 @@ Have you selected two different themes for your dark/light schemes in user prefe
         path: "/",
         expires: 9999,
       });
-      lightTheme.media = "all";
-      darkTheme.media = "(prefers-color-scheme: dark)";
+
+      if (lightScheme.origMedia) {
+        lightScheme.media = lightScheme.origMedia;
+        lightScheme.removeAttribute("origMedia");
+      }
+      if (darkScheme.origMedia) {
+        darkScheme.media = darkScheme.origMedia;
+        darkScheme.removeAttribute("origMedia");
+      }
+      if (logoDarkSrc?.origMedia) {
+        logoDarkSrc.media = logoDarkSrc.origMedia;
+      }
 
       if (window?.matchMedia("(prefers-color-scheme: dark)").matches) {
         Session.currentProp("defaultColorSchemeIsDark", true);
