@@ -8,56 +8,128 @@ import cookie from "discourse/lib/cookie";
 import { observes } from "discourse-common/utils/decorators";
 import Session from "discourse/models/session";
 
-export const COLOR_SCHEME_OVERRIDE_KEY = "color_scheme_override";
+function activeScheme() {
+  let savedSchemeChoice = cookie("userSelectedScheme");
 
-export function colorSchemeOverride(type) {
-  const lightScheme = document.querySelector("link.light-scheme");
-  const darkScheme =
-    document.querySelector("link.dark-scheme") ||
-    document.querySelector("link#cs-preview-dark");
+  if (savedSchemeChoice === "dark") {
+    return "dark";
+  } else if (savedSchemeChoice === "light") {
+    return "light";
+  } else if (window?.matchMedia("(prefers-color-scheme: dark)").matches) {
+    return "dark";
+  } else {
+    return "light";
+  }
+}
 
-  if (!lightScheme && !darkScheme) {
+function updateThemeColor(frames = 0) {
+  // The number is arbitrary (~1s) and in most cases the actual count ends up
+  // being either 0 or 3 (Safari)
+  if (frames >= 60) {
+    // The style is unlikely to load at this point so bail
     return;
   }
 
-  const logoDarkSrc = document.querySelector(".title picture source");
+  let color = getComputedStyle(document.documentElement).getPropertyValue(
+    "--header_background"
+  );
 
-  switch (type) {
-    case "dark":
-      lightScheme.origMedia = lightScheme.media;
-      lightScheme.media = "none";
-      darkScheme.origMedia = darkScheme.media;
-      darkScheme.media = "all";
-      if (logoDarkSrc) {
+  if (color) {
+    document
+      .querySelector("meta[name=theme-color]")
+      .setAttribute("content", color);
+  } else {
+    requestAnimationFrame(() => updateThemeColor(frames + 1));
+  }
+}
+
+export default {
+  name: "dark-light-toggle-hamburger-initializer",
+
+  initialize() {
+    // get the two <link> elements that hold the dark/light variables
+    let lightTheme = document.querySelector(".light-scheme");
+    let darkTheme = document.querySelector(".dark-scheme");
+
+    if (!lightTheme || !darkTheme) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `Toggle Dark/Light mode hamburger widget not loaded:
+Have you selected two different themes for your dark/light schemes in user preferences? "u/preferences/interface"
+        `
+      );
+      return false;
+    }
+
+    let switchToDark = function () {
+      cookie("userSelectedScheme", "dark", {
+        path: "/",
+        expires: 9999,
+      });
+      darkTheme.media = "all";
+      lightTheme.media = "none";
+       if (logoDarkSrc) {
         logoDarkSrc.origMedia = logoDarkSrc.media;
         logoDarkSrc.media = "all";
-      }
-      break;
-    case "light":
-      lightScheme.origMedia = lightScheme.media;
-      lightScheme.media = "all";
-      darkScheme.origMedia = darkScheme.media;
-      darkScheme.media = "none";
+
+      Session.currentProp("defaultColorSchemeIsDark", true);
+    };
+
+    let switchToLight = function () {
+      cookie("userSelectedScheme", "light", {
+        path: "/",
+        expires: 9999,
+      });
+      lightTheme.media = "all";
+      darkTheme.media = "none";
       if (logoDarkSrc) {
         logoDarkSrc.origMedia = logoDarkSrc.media;
         logoDarkSrc.media = "none";
+
+      Session.currentProp("defaultColorSchemeIsDark", false);
+    };
+
+    let switchToAuto = function () {
+      cookie("userSelectedScheme", "auto", {
+        path: "/",
+        expires: 9999,
+      });
+      lightTheme.media = "all";
+      darkTheme.media = "(prefers-color-scheme: dark)";
+
+      if (window?.matchMedia("(prefers-color-scheme: dark)").matches) {
+        Session.currentProp("defaultColorSchemeIsDark", true);
+      } else {
+        Session.currentProp("defaultColorSchemeIsDark", false);
       }
-      break;
-    default:
-      if (lightScheme.origMedia) {
-        lightScheme.media = lightScheme.origMedia;
-        lightScheme.removeAttribute("origMedia");
+    };
+
+    let toggleDarkLight = function () {
+      if (activeScheme() === "light") {
+        switchToDark();
+      } else {
+        switchToLight();
       }
-      if (darkScheme.origMedia) {
-        darkScheme.media = darkScheme.origMedia;
-        darkScheme.removeAttribute("origMedia");
+
+      updateThemeColor();
+    };
+
+    let loadDarkOrLight = function () {
+      updateThemeColor();
+      let savedSchemeChoice = cookie("userSelectedScheme");
+
+      if (!savedSchemeChoice) {
+        return false;
       }
-      if (logoDarkSrc?.origMedia) {
-        logoDarkSrc.media = logoDarkSrc.origMedia;
+
+      if (savedSchemeChoice === "light") {
+        switchToLight();
+      } else if (savedSchemeChoice === "dark") {
+        switchToDark();
+      } else if (savedSchemeChoice === "auto") {
+        switchToAuto();
       }
-      break;
-  }
-}
+    };
 
     function createToggle(iconName, labelName) {
       let title = I18n.t(themePrefix("toggle_description"));
