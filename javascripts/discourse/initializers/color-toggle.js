@@ -80,23 +80,9 @@ Have you selected two different themes for your dark/light schemes in user prefe
       lightTheme.media = "all";
       darkTheme.media = "none";
 
-      Session.currentProp("defaultColorSchemeIslight", true);
+      Session.currentProp("defaultColorSchemeIsDark", false);
     };
 
-    let switchToAuto = function () {
-      cookie("userSelectedScheme", "auto", {
-        path: "/",
-        expires: 9999,
-      });
-      lightTheme.media = "all";
-      darkTheme.media = "(prefers-color-scheme: dark)";
-
-      if (window?.matchMedia("(prefers-color-scheme: dark)").matches) {
-        Session.currentProp("defaultColorSchemeIsDark", true);
-      } else {
-        Session.currentProp("defaultColorSchemeIsDark", false);
-      }
-    };
 
     let toggleDarkLight = function () {
       if (activeScheme() === "light") {
@@ -120,8 +106,6 @@ Have you selected two different themes for your dark/light schemes in user prefe
         switchToLight();
       } else if (savedSchemeChoice === "dark") {
         switchToDark();
-      } else if (savedSchemeChoice === "auto") {
-        switchToAuto();
       }
     };
 
@@ -218,20 +202,7 @@ Have you selected two different themes for your dark/light schemes in user prefe
         },
       });
 
-      api.createWidget("auto-selector", {
-        buildKey: () => "auto-selector",
-
-        defaultState() {
-          // checks to see what the autoScheme should be
-          // I do this by checking if the users sytem setting is in dark mode
-          // if the system setting is in dark mode, then the 'auto' scheme should be dark
-          // and light if it is not
-          if (window?.matchMedia("(prefers-color-scheme: dark)").matches) {
-            return { autoScheme: "dark" };
-          } else {
-            return { autoScheme: "light" };
-          }
-        },
+      
 
         click() {
           // if auto is currently selected, turn auto off
