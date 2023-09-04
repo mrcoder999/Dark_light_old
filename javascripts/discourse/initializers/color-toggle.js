@@ -105,26 +105,7 @@ Have you selected two different themes for your dark/light schemes in user prefe
       Session.currentProp("defaultColorSchemeIsDark", false);
     };
 
-    let switchToAuto = function () {
-      cookie("userSelectedScheme", "auto", {
-        path: "/",
-        expires: 9999,
-      });
-
-      if (lightScheme.origMedia) {
-        lightScheme.media = lightScheme.origMedia;
-        lightScheme.removeAttribute("origMedia");
-      }
-      if (darkScheme.origMedia) {
-        darkScheme.media = darkScheme.origMedia;
-        darkScheme.removeAttribute("origMedia");
-      }
-      if (logoDarkSrc?.origMedia) {
-        logoDarkSrc.media = logoDarkSrc.origMedia;
-      }
-
-      
-    };
+   
 
     let toggleDarkLight = function () {
       if (activeScheme() === "light") {
