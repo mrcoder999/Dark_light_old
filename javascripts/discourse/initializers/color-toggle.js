@@ -84,6 +84,7 @@ Have you selected two different themes for your dark/light schemes in user prefe
       });
       lightTheme.media = "all";
       darkTheme.media = "none";
+      logoDarkSrc.media = "none";
       if (logoDarkSrc) {
         logoDarkSrc.origMedia = logoDarkSrc.media;
         logoDarkSrc.media = "none";}
