@@ -75,6 +75,8 @@ Have you selected two different themes for your dark/light schemes in user prefe
       Session.currentProp("defaultColorSchemeIsDark", true);
     };
 
+    const logoDarkSrc = document.querySelector(".title picture source");
+    
     let switchToLight = function () {
       cookie("userSelectedScheme", "light", {
         path: "/",
