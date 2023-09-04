@@ -202,7 +202,20 @@ Have you selected two different themes for your dark/light schemes in user prefe
         },
       });
 
-      
+       api.createWidget("auto-selector", {
+        buildKey: () => "auto-selector",
+
+        defaultState() {
+          // checks to see what the autoScheme should be
+          // I do this by checking if the users sytem setting is in dark mode
+          // if the system setting is in dark mode, then the 'auto' scheme should be dark
+          // and light if it is not
+          if (window?.matchMedia("(prefers-color-scheme: dark)").matches) {
+            return { autoScheme: "dark" };
+          } else {
+            return { autoScheme: "light" };
+          }
+        },
 
         click() {
           // if auto is currently selected, turn auto off
