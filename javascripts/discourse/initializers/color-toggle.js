@@ -66,8 +66,13 @@ Have you selected two different themes for your dark/light schemes in user prefe
         path: "/",
         expires: 9999,
       });
-      darkTheme.media = "all";
-      lightTheme.media = "none";
+       lightScheme.origMedia = lightScheme.media;
+      lightScheme.media = "none";
+      darkScheme.origMedia = darkScheme.media;
+      darkScheme.media = "all";
+      if (logoDarkSrc) {
+        logoDarkSrc.origMedia = logoDarkSrc.media;
+        logoDarkSrc.media = "all";
 
       Session.currentProp("defaultColorSchemeIsDark", true);
     };
@@ -77,8 +82,13 @@ Have you selected two different themes for your dark/light schemes in user prefe
         path: "/",
         expires: 9999,
       });
-      lightTheme.media = "all";
-      darkTheme.media = "none";
+      lightScheme.origMedia = lightScheme.media;
+      lightScheme.media = "all";
+      darkScheme.origMedia = darkScheme.media;
+      darkScheme.media = "none";
+      if (logoDarkSrc) {
+        logoDarkSrc.origMedia = logoDarkSrc.media;
+        logoDarkSrc.media = "none";
 
       Session.currentProp("defaultColorSchemeIsDark", false);
     };
