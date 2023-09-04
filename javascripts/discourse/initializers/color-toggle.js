@@ -79,8 +79,8 @@ Have you selected two different themes for your dark/light schemes in user prefe
       });
       lightTheme.media = "all";
       darkTheme.media = "none";
-                document.querySelector("link#cs-preview-dark").media =
-              "(prefers-color-scheme: none)";
+      logoDarkSrc.origMedia = logoDarkSrc.media;
+        logoDarkSrc.media = "none";
 
       Session.currentProp("defaultColorSchemeIsDark", false);
     };
