@@ -21,17 +21,6 @@ function activeScheme() {
     return "light";
   }
 }
-
-import Session from "discourse/models/session";
-import {
-  COLOR_SCHEME_OVERRIDE_KEY,
-  colorSchemeOverride,
-} from "../lib/color-scheme-override";
-import { schedule } from "@ember/runloop";
-import { withPluginApi } from "discourse/lib/plugin-api";
-import { loadColorSchemeStylesheet } from "discourse/lib/color-scheme-picker";
-import { currentThemeId } from "discourse/lib/theme-selector";
-
 export default {
   name: "color-scheme-toggler",
 
