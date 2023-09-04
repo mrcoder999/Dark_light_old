@@ -66,7 +66,7 @@ Have you selected two different themes for your dark/light schemes in user prefe
         path: "/",
         expires: 9999,
       });
-      
+      darkTheme.media = "all";
       lightTheme.media = "none";
 
       Session.currentProp("defaultColorSchemeIsDark", true);
@@ -77,7 +77,7 @@ Have you selected two different themes for your dark/light schemes in user prefe
         path: "/",
         expires: 9999,
       });
-      
+      lightTheme.media = "all";
       darkTheme.media = "none";
 
       Session.currentProp("defaultColorSchemeIsDark", false);
