@@ -79,6 +79,16 @@ Have you selected two different themes for your dark/light schemes in user prefe
       Session.currentProp("defaultColorSchemeIsDark", true);
     };
 
+  export function colorSchemeOverride(type) {
+  const lightScheme = document.querySelector("link.light-scheme");
+  const darkScheme =
+    document.querySelector("link.dark-scheme") ||
+    document.querySelector("link#cs-preview-dark");
+
+  if (!lightScheme && !darkScheme) {
+    return;
+  }
+
     const logoDarkSrc = document.querySelector(".title picture source");
     
     let switchToLight = function () {
