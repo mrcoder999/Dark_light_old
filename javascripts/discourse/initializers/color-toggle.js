@@ -70,7 +70,7 @@ Have you selected two different themes for your dark/light schemes in user prefe
       lightTheme.media = "none";
        if (logoDarkSrc) {
         logoDarkSrc.origMedia = logoDarkSrc.media;
-        logoDarkSrc.media = "all";
+        logoDarkSrc.media = "all";}
 
       Session.currentProp("defaultColorSchemeIsDark", true);
     };
@@ -84,7 +84,7 @@ Have you selected two different themes for your dark/light schemes in user prefe
       darkTheme.media = "none";
       if (logoDarkSrc) {
         logoDarkSrc.origMedia = logoDarkSrc.media;
-        logoDarkSrc.media = "none";
+        logoDarkSrc.media = "none";}
 
       Session.currentProp("defaultColorSchemeIsDark", false);
     };
